@@ -1,9 +1,13 @@
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 import type { IRepository, Room, Task, Vote, VoteChoice, RealtimeCallbacks } from '@/types';
 
 export class SupabaseRepository implements IRepository {
+  private get supabase() {
+    return getSupabaseClient();
+  }
+
   async getRoomByWord(word: string): Promise<Room | null> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('rooms')
       .select('*')
       .eq('word', word)
@@ -14,7 +18,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   async createRoom(word: string): Promise<Room> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('rooms')
       .insert({ word })
       .select()
@@ -25,7 +29,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   async getTasksByRoomId(roomId: string): Promise<Task[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('tasks')
       .select('*')
       .eq('room_id', roomId)
@@ -36,7 +40,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   async createTask(roomId: string, text: string, creatorName: string): Promise<Task> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('tasks')
       .insert({ room_id: roomId, text, creator_name: creatorName })
       .select()
@@ -47,7 +51,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   async deleteTask(taskId: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from('tasks')
       .delete()
       .eq('id', taskId);
@@ -56,7 +60,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   async getVotesByTaskId(taskId: string): Promise<Vote[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('votes')
       .select('*')
       .eq('task_id', taskId);
@@ -66,7 +70,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   async getVotesByRoomId(roomId: string): Promise<Vote[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('votes')
       .select('*, tasks!inner(room_id)')
       .eq('tasks.room_id', roomId);
@@ -76,7 +80,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   async upsertVote(taskId: string, voterName: string, choice: VoteChoice): Promise<Vote> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('votes')
       .upsert(
         { task_id: taskId, voter_name: voterName, choice },
@@ -90,7 +94,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   async deleteVote(taskId: string, voterName: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from('votes')
       .delete()
       .eq('task_id', taskId)
@@ -100,6 +104,7 @@ export class SupabaseRepository implements IRepository {
   }
 
   subscribeToRoom(roomId: string, callbacks: RealtimeCallbacks): () => void {
+    const supabase = this.supabase;
     const channel = supabase
       .channel(`room:${roomId}`)
       .on(

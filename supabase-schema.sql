@@ -35,7 +35,7 @@ create index idx_rooms_word on rooms(word);
 create index idx_tasks_room_id on tasks(room_id);
 create index idx_votes_task_id on votes(task_id);
 
--- Enable realtime
+-- Enable real-time
 alter publication supabase_realtime add table rooms;
 alter publication supabase_realtime add table tasks;
 alter publication supabase_realtime add table votes;

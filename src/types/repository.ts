@@ -4,6 +4,8 @@ export interface RealtimeCallbacks {
   onTaskAdded?: (task: Task) => void;
   onTaskDeleted?: (taskId: string) => void;
   onVoteChanged?: (vote: Vote) => void;
+  /** Called when any data changes - use for simple refresh triggers */
+  onDataChanged?: () => void;
 }
 
 export interface IRepository {

@@ -44,17 +44,38 @@ export function useTasks(taskService: ITaskService, roomId: string | null) {
 
   const removeTask = useCallback(async (taskId: string) => {
     setError(null);
-    // Optimistic update
-    const previousTasks = tasks;
-    setTasks(prev => prev.filter(t => t.id !== taskId));
+
+    // Capture the task being removed for potential rollback
+    let removedTask: TaskWithVotes | undefined;
+    let removedIndex: number = -1;
+
+    // Optimistic update - capture removed task during the update
+    setTasks(prev => {
+      removedIndex = prev.findIndex(t => t.id === taskId);
+      if (removedIndex !== -1) {
+        removedTask = prev[removedIndex];
+      }
+      return prev.filter(t => t.id !== taskId);
+    });
+
     try {
       await taskService.removeTask(taskId);
     } catch (e) {
-      // Rollback on error
-      setTasks(previousTasks);
+      // Rollback on error - add the task back at its original position
+      if (removedTask) {
+        const taskToRestore = removedTask;
+        const indexToRestore = removedIndex;
+        setTasks(prev => {
+          const newTasks = [...prev];
+          // Insert at original position, or at end if position is invalid
+          const insertIndex = Math.min(indexToRestore, newTasks.length);
+          newTasks.splice(insertIndex, 0, taskToRestore);
+          return newTasks;
+        });
+      }
       setError(e instanceof Error ? e : new Error('Failed to remove task'));
     }
-  }, [taskService, tasks]);
+  }, [taskService]);
 
   const refreshTasks = loadTasks;
 

@@ -23,9 +23,12 @@ export default function Home() {
     if (!room?.id || !repository.subscribeToRoom) return;
 
     const unsubscribe = repository.subscribeToRoom(room.id, {
+      // Specific callbacks for Supabase real-time
       onTaskAdded: () => refreshTasks(),
       onTaskDeleted: () => refreshTasks(),
       onVoteChanged: () => refreshTasks(),
+      // Generic callback for LocalStorage cross-tab sync
+      onDataChanged: () => refreshTasks(),
     });
 
     return unsubscribe;

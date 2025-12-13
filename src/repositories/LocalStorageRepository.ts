@@ -139,20 +139,25 @@ export class LocalStorageRepository implements IRepository {
 
   // Cross-tab sync via storage events
   subscribeToRoom(roomId: string, callbacks: RealtimeCallbacks): () => void {
-    const handleStorage = () => {
-      callbacks.onTaskAdded?.(null as any); // Trigger refresh
-      callbacks.onVoteChanged?.(null as any);
+    const handleStorageEvent = (event: StorageEvent) => {
+      // Only react to changes in our storage key
+      if (event.key !== STORAGE_KEY) return;
+      callbacks.onDataChanged?.();
+    };
+
+    const handleLocalChange = () => {
+      callbacks.onDataChanged?.();
     };
 
     // Listen for changes from other tabs
-    window.addEventListener('storage', handleStorage);
+    window.addEventListener('storage', handleStorageEvent);
 
     // Listen for changes from this tab
-    this.listeners.add(handleStorage);
+    this.listeners.add(handleLocalChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorage);
-      this.listeners.delete(handleStorage);
+      window.removeEventListener('storage', handleStorageEvent);
+      this.listeners.delete(handleLocalChange);
     };
   }
 }

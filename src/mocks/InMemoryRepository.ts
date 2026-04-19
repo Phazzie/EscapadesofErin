@@ -15,6 +15,7 @@ export class InMemoryRepository implements IRepository {
   }
 
   async createRoom(word: string): Promise<Room> {
+    if (this.roomsByWord.has(word)) throw new Error(`Room with word "${word}" already exists`);
     const room: Room = {
       id: this.generateId(),
       word,

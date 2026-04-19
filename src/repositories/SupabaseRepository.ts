@@ -120,10 +120,9 @@ export class SupabaseRepository implements IRepository {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'votes' },
-        (payload) => {
-          if (payload.new && typeof payload.new === 'object') {
-            callbacks.onVoteChanged?.(this.mapVote(payload.new));
-          }
+        () => {
+          // Trigger a generic refresh on any vote change (insert, update, delete)
+          callbacks.onVoteChanged?.(null as any);
         }
       )
       .subscribe();

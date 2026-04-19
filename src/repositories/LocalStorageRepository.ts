@@ -55,7 +55,7 @@ export class LocalStorageRepository implements IRepository {
   async createRoom(word: string): Promise<Room> {
     const data = this.getData();
     const existing = data.rooms.find(r => r.word === word);
-    if (existing) return existing;
+    if (existing) throw new Error(`Room with word "${word}" already exists`);
 
     const room: Room = {
       id: this.generateId(),

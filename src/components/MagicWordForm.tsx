@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { FormEvent } from 'react';
 
 interface MagicWordFormProps {
   onJoin: (word: string, name: string) => void;
@@ -11,7 +12,7 @@ export function MagicWordForm({ onJoin, isLoading }: MagicWordFormProps) {
   const [word, setWord] = useState('');
   const [name, setName] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (word.trim() && name.trim()) {
       onJoin(word.trim(), name.trim());

@@ -9,19 +9,35 @@ export function useSession() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    setUserNameState(stored);
-    setIsLoading(false);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      setUserNameState(stored);
+    } catch (error) {
+      console.error('Failed to load session from localStorage:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const setUserName = useCallback((name: string) => {
-    localStorage.setItem(STORAGE_KEY, name);
-    setUserNameState(name);
+    try {
+      localStorage.setItem(STORAGE_KEY, name);
+      setUserNameState(name);
+    } catch (error) {
+      console.error('Failed to save session to localStorage:', error);
+      // Still update state even if storage fails
+      setUserNameState(name);
+    }
   }, []);
 
   const clearSession = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    setUserNameState(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear session from localStorage:', error);
+    } finally {
+      setUserNameState(null);
+    }
   }, []);
 
   return {

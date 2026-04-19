@@ -14,7 +14,7 @@ create table rooms (
 -- Tasks table
 create table tasks (
   id uuid primary key default uuid_generate_v4(),
-  room_id uuid references rooms(id) on delete cascade,
+  room_id uuid not null references rooms(id) on delete cascade,
   text text not null,
   creator_name text not null,
   created_at timestamptz default now()
@@ -40,6 +40,10 @@ alter publication supabase_realtime add table rooms;
 alter publication supabase_realtime add table tasks;
 alter publication supabase_realtime add table votes;
 
+-- WARNING: DEV/DEMO ONLY - These RLS policies are intentionally permissive and allow
+-- unauthenticated full CRUD access. Do NOT use in production. For a production deployment,
+-- replace these policies with ones that require authentication (e.g., auth.uid() IS NOT NULL)
+-- and scope data access to the authenticated user.
 -- RLS Policies (permissive for simplicity - just you and one other person)
 alter table rooms enable row level security;
 alter table tasks enable row level security;

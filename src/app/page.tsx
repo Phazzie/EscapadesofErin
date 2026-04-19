@@ -10,7 +10,7 @@ export default function Home() {
   const { userName, setUserName, clearSession, isLoading: sessionLoading } = useSession();
   const { room, isLoading: roomLoading, joinRoom, leaveRoom } = useRoom(roomService);
   const { tasks, isLoading: tasksLoading, addTask, removeTask, refreshTasks } = useTasks(taskService, room?.id || null);
-  const { myVotes, castVote } = useVoting(voteService, tasks, userName, refreshTasks);
+  const { myVotes, castVote } = useVoting(voteService, tasks, userName);
 
   const [mounted, setMounted] = useState(false);
 
@@ -35,8 +35,12 @@ export default function Home() {
   }, [room?.id, repository, refreshTasks]);
 
   const handleJoin = useCallback(async (word: string, name: string) => {
-    setUserName(name);
-    await joinRoom(word);
+    try {
+      await joinRoom(word);
+      setUserName(name);
+    } catch {
+      // joinRoom already sets hook error; keep session clean
+    }
   }, [setUserName, joinRoom]);
 
   const handleLeave = useCallback(() => {
@@ -71,7 +75,7 @@ export default function Home() {
   // Show room view
   return (
     <div className="min-h-screen bg-gray-50">
-      <RoomHeader word={room.word} userName={userName!} onLeave={handleLeave} />
+      <RoomHeader word={room.word} userName={userName ?? 'Guest'} onLeave={handleLeave} />
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6">
@@ -86,7 +90,7 @@ export default function Home() {
             myVotes={myVotes}
             onVote={handleVote}
             onDelete={removeTask}
-            currentUser={userName!}
+            currentUser={userName ?? 'Guest'}
           />
         )}
       </main>

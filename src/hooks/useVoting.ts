@@ -6,8 +6,7 @@ import type { TaskWithVotes, VoteChoice, IVoteService } from '@/types';
 export function useVoting(
   voteService: IVoteService,
   tasks: TaskWithVotes[],
-  userName: string | null,
-  onVoteChange?: () => void
+  userName: string | null
 ) {
   const [isVoting, setIsVoting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -37,13 +36,12 @@ export function useVoting(
       } else {
         await voteService.castVote(taskId, userName, choice);
       }
-      onVoteChange?.();
     } catch (e) {
       setError(e instanceof Error ? e : new Error('Failed to cast vote'));
     } finally {
       setIsVoting(false);
     }
-  }, [voteService, userName, myVotes, onVoteChange]);
+  }, [voteService, userName, myVotes]);
 
   const removeVote = useCallback(async (taskId: string) => {
     if (!userName) return;
@@ -51,13 +49,12 @@ export function useVoting(
     setError(null);
     try {
       await voteService.removeVote(taskId, userName);
-      onVoteChange?.();
     } catch (e) {
       setError(e instanceof Error ? e : new Error('Failed to remove vote'));
     } finally {
       setIsVoting(false);
     }
-  }, [voteService, userName, onVoteChange]);
+  }, [voteService, userName]);
 
   return {
     myVotes,
